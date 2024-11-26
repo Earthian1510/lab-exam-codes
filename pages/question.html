@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question</title>
+</head>
+<body>
+    <header>
+        <h1 id="question-title">Question</h1>
+    </header>
+    <main>
+        <pre id="code-block"></pre>
+    </main>
+    <script>
+        const codes = [
+            {
+                "_id": "6745e4dace8e5fb774c135a3",
+                "srNo": 1,
+                "code": "//audio_loopback\n#include \"L138_LCDK_aic3106_init.h\"\ninterrupt void interrupt4(void)  {\n  uint32_t sample;  \nsample = input_sample();  \noutput_sample(sample);  \nreturn;\n}\nint main(void)\n{\nL138_initialise_intr(FS_48000_HZ,ADC_GAIN_0DB,DAC_ATTEN_0DB,LCDK_LINE_INPUT);\n  while(1);\n}",
+            },
+            {
+                "_id": "6745e53cce8e5fb774c135a6",
+                "srNo": 2,
+                "code": "//Ramp wave\n#include \"L138_LCDK_aic3106_init.h\"\n#define LOOPLENGTH 64\nint16_t output = 0;\ninterrupt void interrupt4(void)\n{\n  output_left_sample(output);   \n  output += 2000;              \n  if (output > 30000)          \n    output = -30000;             \n  return;\n}\nint main(void)\n{\nL138_initialise_intr(FS_8000_HZ,ADC_GAIN_0DB,DAC_ATTEN_0DB,LCDK_LINE_INPUT);\n  while(1);\n}",
+            },
+            {
+                "_id": "6745e580ce8e5fb774c135a8",
+                "srNo": 3,
+                "code": "//square wave\n#include \"L138_LCDK_aic3106_init.h\"\n#define LOOPLENGTH 64\nint16_t square_table[LOOPLENGTH] =\n{10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000,\n10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000,\n10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000,\n10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000,\n-10000,-10000,-10000,-10000,-10000,-10000,-10000,-10000,\n-10000,-10000,-10000,-10000,-10000,-10000,-10000,-10000,\n-10000,-10000,-10000,-10000,-10000,-10000,-10000,-10000,\n-10000,-10000,-10000,-10000,-10000,-10000,-10000,-10000};\nint16_t loopindex = 0;\ninterrupt void interrupt4(void) \n{\n  output_left_sample(square_table[loopindex++]);\n  if (loopindex >= LOOPLENGTH)\n    loopindex = 0;\n  return;\n}\nint main(void)\n{\nL138_initialise_intr(FS_8000_HZ,ADC_GAIN_0DB,DAC_ATTEN_0DB,LCDK_LINE_INPUT);\n  while(1);\n}",
+            },
+            {
+                "_id": "6745e5aece8e5fb774c135aa",
+                "srNo": 4,
+                "code": "// Audio delay\n#include \"L138_LCDK_aic3106_init.h\"\n#define BUF_SIZE 48000 \nfrequency(BUF_SIZE/Sampling freq)=delay in seconds\nuint16_t input,output,delayed;  \nuint16_t buffer[BUF_SIZE];     \nint i = 0;\ninterrupt void interrupt4(void)\n{\n  input = input_left_sample();\n  delayed = buffer[i];               \n  output = delayed;                  \n  buffer[i] = input;                \n  i = (i+1)%BUF_SIZE;               \n  output_sample(output);      \n  return;\n}\nint main(void)\n{\n  int i;\n  for (i=0 ; i<BUF_SIZE ; i++)\n  {\n    buffer[i] = 0;\n  }\nL138_initialise_intr(FS_48000_HZ,ADC_GAIN_24DB,DAC_ATTEN_0DB,LCDK_LINE_INPUT);\n  while(1);\n}",
+            },
+            {
+                "_id": "6745e5d2ce8e5fb774c135ac",
+                "srNo": 5,
+                "code": "// Sine wave\n#include \"L138_LCDK_aic3106_init.h\"\n#define LOOPLENGTH 48\nint16_t sine_table[LOOPLENGTH] = {0, 1305, 2588, 3827,\n      5000, 6088, 7071, 7934, 8660, 9239, 9659, 9914, 10000,\n       9914, 9659, 9239, 8660, 7934, 7071, 6088, 5000, 3827,\n    2588, 1305, 0, -1305, -2588, -3827, -5000, -6088, -7071,\n    -7934, -8660, -9239, -9659, -9914, -10000, -9914, -9659,\n     -9239, -8660, -7934, -7071, -6088, -5000, -3827, -2588,\n     -1305};\nint sine_ptr = 0; \ninterrupt void interrupt4(void) \n{\n  uint16_t left_sample;\n  left_sample =  sine_table[sine_ptr];\n  sine_ptr = (sine_ptr+1)%LOOPLENGTH;\n  output_left_sample(left_sample);\n  return;\n}\nint main(void)\n{\nL138_initialise_intr(FS_48000_HZ,ADC_GAIN_0DB,DAC_ATTEN_0DB,LCDK_LINE_INPUT);\n  while(1);\n}",
+            }
+        ];
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const srNo = urlParams.get('srNo');
+
+        const questionData = codes.find(code => code.srNo == srNo);
+        console.log(srNo)
+
+        if (questionData) {
+            document.getElementById('question-title').textContent = `Question ${questionData.srNo}`;
+            document.getElementById('code-block').textContent = questionData.code;
+        } else {
+            document.getElementById('code-block').textContent = "Question not found!";
+        }
+    </script>
+</body>
+
+
+
+</html>
